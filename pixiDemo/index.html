@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="js/pixi.min.js"></script>
+    <script>
+		
+		var app = new PIXI.Application(window.innerWidth,window.innerHeight);
+        document.body.appendChild(app.view);
+        
+        var bg = new PIXI.Sprite.fromImage("res/背景.jpg");
+		
+        app.stage.addChild(bg);
+		bg.width = 3*window.innerWidth;
+		bg.height = window.innerHeight;
+		bg.interactive = true;
+		const maskList = InitMask();
+		const LEFT_MARGIN = -bg.width + window.innerWidth;
+		bg.on("mousedown",function(){
+			this.isChoose = true;
+		});
+		bg.on("mouseup",function(){
+			this.isChoose = false;
+		});
+		bg.on("mousemove",function(e){
+			if(this.isChoose){
+				bg.x += (e.data.global.x - bg.lastPos);
+				moveMaskList(maskList,(e.data.global.x - bg.lastPos) * 1.5)
+			}
+			if(bg.x > 0)
+				bg.x = 0;
+			if(bg.x < LEFT_MARGIN)
+				bg.x = LEFT_MARGIN;
+				
+			bg.lastPos = e.data.global.x;
+		});
+		
+		function InitMask(name,x){
+			var list = [];
+			var name = "生旦净丑";
+			var textList = [{w:2401,h:741,x:100,y:200},
+							{w:2249,h:777,x:1500,y:50},
+							{w:2304,h:848,x:3200,y:60},
+							{w:2599,h:708,x:5400,y:70}]
+			var whList = [{y:300,w:170,h:167,x:900},
+						  {y:500,w:155,h:140,x:2300},
+						  {y:600,w:112,h:156,x:5100},
+						  {y:600,w:162,h:141,x:6700}]
+			for(var i = 0;i<4;i++){
+				var text = new PIXI.Sprite.fromImage(`res/${name[i]}-文字块.png`);
+				var mask = new PIXI.Sprite.fromImage(`res/${name[i]}-面具.png`);
+				app.stage.addChild(text);
+				app.stage.addChild(mask);
+				text.width = textList[i].w/1.5;
+				text.height = textList[i].h/1.2;
+				text.x = textList[i].x;
+				text.y = textList[i].y;
+				mask.anchor.set(0.5,0.5);
+				mask.y = whList[i].y;
+				mask.x = whList[i].x;
+				mask.width = whList[i].w * 5;
+				mask.height = whList[i].h * 5;
+				mask.text = text;
+				list.push(mask);
+			}
+			list.forEach(mask=>app.stage.addChild(mask));
+			return list;
+		}
+		
+		function moveMaskList(list,x){
+			if(bg.x > 0)
+				return ;
+			if(bg.x < LEFT_MARGIN)
+				return ;
+			console.log(x);
+			list.forEach(mask=>{mask.x+=x;mask.text.x+=x*0.8});
+		}
+    </script>
+</body>
+</html>
