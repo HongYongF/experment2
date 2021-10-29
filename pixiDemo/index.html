@@ -14,20 +14,90 @@
         document.body.appendChild(app.view);
         
         var bg = new PIXI.Sprite.fromImage("res/背景.jpg");
-		
+		var dirLeft = new PIXI.Sprite.fromImage("res/箭头.png");
+		var dirRight = new PIXI.Sprite.fromImage("res/箭头.png");
+		const dirTexture1 = new PIXI.Texture.fromImage("res/箭头.png");
+		const dirTexture2 = new PIXI.Texture.fromImage("res/箭头_选中.png");
         app.stage.addChild(bg);
 		bg.width = 3*window.innerWidth;
 		bg.height = window.innerHeight;
 		bg.interactive = true;
 		const maskList = InitMask();
 		const LEFT_MARGIN = -bg.width + window.innerWidth;
+		const MOVE_SPEED = 7;
+		app.stage.addChild(dirLeft);
+		app.stage.addChild(dirRight);
+		dirLeft.width = 88;
+		dirLeft.height = 93;
+		dirRight.width = 88;
+		dirRight.height = 93;
+		dirLeft.anchor.set(0.5,0.5);
+		dirLeft.x = 80;
+		dirLeft.y = window.innerHeight/2;
+		dirLeft.rotation = Math.PI/2;
+		dirRight.anchor.set(0.5,0.5);
+		dirRight.x = window.innerWidth - 120;
+		dirRight.y = window.innerHeight/2;
+		dirRight.rotation = Math.PI*3/2;
+		dirLeft.interactive = true;
+		dirRight.interactive = true;
+		dirLeft.isMove = false;
+		dirRight.isMove = false;
+		dirLeft.on("mousedown",function(){
+			dirLeft.isMove = true;
+		})
+		dirLeft.on("mouseup",function(){
+			dirLeft.isMove = false;
+		})
+		dirLeft.on("mouseover",function(){
+			dirLeft.texture = dirTexture2;
+		})
+		dirRight.on("mousedown",function(){
+			dirRight.isMove = true;
+		})
+		dirRight.on("mouseup",function(){
+			dirRight.isMove = false;
+		})
+		dirRight.on("mouseover",function(){
+			dirRight.texture = dirTexture2;
+		})
 		bg.on("mousedown",function(){
 			this.isChoose = true;
 		});
 		bg.on("mouseup",function(){
 			this.isChoose = false;
 		});
-		bg.on("mousemove",function(e){
+		bg.on("mousemove",move);
+		bg.on("mouseover",function(){
+			console.log("111asd");
+			dirLeft.isMove = false;
+			dirRight.isMove = false;
+			dirLeft.texture = dirTexture1;
+			dirRight.texture = dirTexture1;
+		})
+		app.ticker.add(dirMove);
+		function dirMove(){
+			if(dirLeft.isMove){
+				var moveX = MOVE_SPEED;
+				bg.x += moveX;
+				moveMaskList(maskList,moveX * 1.5)
+				if(bg.x > 0)
+					bg.x = 0;
+				if(bg.x < LEFT_MARGIN)
+					bg.x = LEFT_MARGIN;
+			}
+			if(dirRight.isMove){
+				var moveX = -MOVE_SPEED;
+				bg.x += moveX;
+				moveMaskList(maskList,moveX * 1.5)
+				if(bg.x > 0)
+					bg.x = 0;
+				if(bg.x < LEFT_MARGIN)
+					bg.x = LEFT_MARGIN;
+			}
+		}
+		
+		function move(e){
 			if(this.isChoose){
 				bg.x += (e.data.global.x - bg.lastPos);
 				moveMaskList(maskList,(e.data.global.x - bg.lastPos) * 1.5)
@@ -38,7 +108,8 @@
 				bg.x = LEFT_MARGIN;
 				
 			bg.lastPos = e.data.global.x;
-		});
+			
+		}
 		
 		function InitMask(name,x){
 			var list = [];
@@ -77,7 +148,6 @@
 				return ;
 			if(bg.x < LEFT_MARGIN)
 				return ;
-			console.log(x);
 			list.forEach(mask=>{mask.x+=x;mask.text.x+=x*0.8});
 		}
     </script>
